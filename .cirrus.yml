@@ -1,0 +1,23 @@
+FreeBSD_task:
+  matrix:
+    env:
+      SSL: openssl
+    env:
+      SSL: openssl31
+    env:
+      # base openssl
+      SSL:
+  matrix:
+    freebsd_instance:
+      image_family: freebsd-13-2
+  prepare_script:
+    - pkg install -y pkgconf cmake git libsodium $SSL
+    - git submodule update --init --recursive
+  configure_script:
+    - ./configure
+  build_script:
+    - make -j $(sysctl -n hw.ncpu || echo 4) -C build
+  test_script:
+    - ldd build/vpnserver
+    - .ci/memory-leak-test.sh
+    - .ci/vpntools-check.sh
